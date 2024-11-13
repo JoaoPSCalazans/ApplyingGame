@@ -7,31 +7,32 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
+import entities.Player;
+import tile.TileManager;
+
 public class GamePanel extends JPanel implements Runnable {
 	
 	final int originalTileSize = 16;//16x16
 	final int scala = 3;
 	
-	final int tileSize = originalTileSize * scala;//48x48
-	final int maxColumns = 16;
-	final int maxRows = 12;
+	public final int tileSize = originalTileSize * scala;//48x48
+	public final int maxColumns = 16;
+	public final int maxRows = 12;
 	final int screenWidth = maxColumns * tileSize;//768
 	final int screenHeight = maxRows * tileSize;
 	
-	int x = 100;
-	int y = 100;
-	int speed = 4;
-	
-	final int Fps = 30;
+	final int Fps = 60;
+	boolean running = false;
 	
 	Thread gameThread;
-	KeyHandler keyH = new KeyHandler();
+	KeyHandler keyH = new KeyHandler(this);
+	TileManager tileM = new TileManager(this);
+	Player player = new Player(this,keyH);
 	
 	public GamePanel() {
 		this.setPreferredSize(new Dimension(screenWidth,screenHeight));  
-		this.setBackground(Color.black);
+		this.setBackground(Color.blue);
 		this.setDoubleBuffered(true);
-		this.addKeyListener(keyH);
 		this.setFocusable(true);
 	}
 	
@@ -46,50 +47,55 @@ public class GamePanel extends JPanel implements Runnable {
 		double drawInterval = 1000000000/Fps;
 		double delta = 0;
 		long lastTime = System.nanoTime();
+		long timer = 0;
+		int frames = 0;
 		long currentTime;
 		
-		while(gameThread != null) {
+		running = true;
+		
+		while(running) {
 			
 			currentTime = System.nanoTime();
-			
 			delta += (currentTime - lastTime) / drawInterval;
-			
+			timer += (currentTime - lastTime);
 			lastTime = currentTime;
 			
-			if(delta >= 1) {
+			while(delta >= 1) {
 				update();
-				repaint();
 				delta--;
+				frames++;
+			}
+			repaint();
+			
+			if(timer >= 1000000000) {
+				System.out.println("Fps: "+frames);
+				frames = 0;
+				timer = 0;
+			}
+			
+			try {
+				Thread.sleep(5);
+				Thread.yield();
+			}catch(InterruptedException e) {
+				e.printStackTrace();
 			}
 			
 		}
 		
 	}
 	
+	public void stopGameThread() {
+		running = false;
+	}
+	
 	public void update() {	
-		
-		if(keyH.up == true) {
-			y -= speed;
-		}
-		else if(keyH.down == true) {
-			y += speed;
-		}
-		else if(keyH.left == true) {
-			x -= speed;
-		}
-		else if(keyH.right == true) {
-			x += speed;
-		}
-		
+		player.update();
 	}
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		
-		Graphics2D graphics2D = (Graphics2D) g;
-		graphics2D.setColor(Color.white);
-		graphics2D.fillRect(x, y, tileSize,tileSize);
-		
-		graphics2D.dispose();	
+		tileM.draw((Graphics2D) g);
+		player.draw((Graphics2D) g);
+		g.dispose();	
 	}
 
 	

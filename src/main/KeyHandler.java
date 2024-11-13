@@ -1,54 +1,71 @@
 package main;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.ActionEvent;
 
-public class KeyHandler implements KeyListener {
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
-	boolean up, down, left, right;
+public class KeyHandler {
 
-	@Override
-	public void keyTyped(KeyEvent e) {
-		// TODO Auto-generated method stub
+	public boolean up, down, left, right;
+	GamePanel panel;
 
+	public KeyHandler(GamePanel gamePanel) {
+
+		this.panel = gamePanel;
+
+		setupKeyBinding("pressed W", "upPressed", true);
+		setupKeyBinding("released W", "upReleased", false);
+		setupKeyBinding("pressed S", "downPressed", true);
+		setupKeyBinding("released S", "downReleased", false);
+		setupKeyBinding("pressed A", "leftPressed", true);
+		setupKeyBinding("released A", "leftReleased", false);
+		setupKeyBinding("pressed D", "rightPressed", true);
+		setupKeyBinding("released D", "rightReleased", false);
 	}
 
-	@Override
-	public void keyPressed(KeyEvent e) {
-		int code = e.getKeyCode();
+	private void setupKeyBinding(String keyStroke, String actionName, boolean pressedState) {
+		panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(keyStroke), actionName);
 
-		if (code == KeyEvent.VK_W) {
-			up = true;
-		}
-		if (code == KeyEvent.VK_S) {
-			down = true;
-		}
-		if (code == KeyEvent.VK_A) {
-			left = true;
-		}
-		if (code == KeyEvent.VK_D) {
-			right = true;
-		}
+		panel.getActionMap().put(actionName, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				switch (actionName) {
+				case "upPressed":
+					up = pressedState;
+					break;
 
-	}
+				case "downPressed":
+					down = pressedState;
+					break;
 
-	@Override
-	public void keyReleased(KeyEvent e) {
-		int code = e.getKeyCode();
+				case "leftPressed":
+					left = pressedState;
+					break;
 
-		if (code == KeyEvent.VK_W) {
-			up = false;
-		}
-		if (code == KeyEvent.VK_S) {
-			down = false;
-		}
-		if (code == KeyEvent.VK_A) {
-			left = false;
-		}
-		if (code == KeyEvent.VK_D) {
-			right = false;
-		}
+				case "rightPressed":
+					right = pressedState;
+					break;
 
+				case "upReleased":
+					up = pressedState;
+					break;
+
+				case "downReleased":
+					down = pressedState;
+					break;
+
+				case "leftReleased":
+					left = pressedState;
+					break;
+
+				case "rightReleased":
+					right = pressedState;
+					break;
+				}
+			}
+		});
 	}
 
 }
